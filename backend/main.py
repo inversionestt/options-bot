@@ -1,16 +1,17 @@
+import os
+import requests
 from fastapi import FastAPI
 
 app = FastAPI()
 
-watchlist = [
-    "AAPL",
-    "MSFT",
-    "GOOGL",
-    "AMZN",
-    "META",
-    "TSLA",
-    "NVDA"
-]
+API_KEY = os.getenv("TRADIER_API_KEY")
+
+headers = {
+    "Authorization": f"Bearer {API_KEY}",
+    "Accept": "application/json"
+}
+
+watchlist = ["AAPL","MSFT","GOOGL","AMZN","META","TSLA","NVDA"]
 
 @app.get("/")
 def home():
@@ -22,12 +23,17 @@ def scan():
     results = []
 
     for symbol in watchlist:
+
+        url = f"https://api.tradier.com/v1/markets/quotes?symbols={symbol}"
+
+        r = requests.get(url, headers=headers)
+        data = r.json()
+
+        price = data["quotes"]["quote"]["last"]
+
         results.append({
             "symbol": symbol,
-            "strategy": "CSP",
-            "strike": 210,
-            "premium": 2.35,
-            "roi": "2.4%"
+            "price": price
         })
 
     return results
