@@ -24,16 +24,31 @@ def scan():
 
     for symbol in watchlist:
 
-        url = f"https://api.tradier.com/v1/markets/options/expirations?symbol={symbol}"
+        # obtener expirations
+        exp_url = f"https://api.tradier.com/v1/markets/options/expirations?symbol={symbol}"
+        r = requests.get(exp_url, headers=headers)
+        expirations = r.json()["expirations"]["date"]
 
-        r = requests.get(url, headers=headers)
+        # usar la primera expiration
+        expiration = expirations[0]
+
+        chain_url = f"https://api.tradier.com/v1/markets/options/chains?symbol={symbol}&expiration={expiration}"
+
+        r = requests.get(chain_url, headers=headers)
         data = r.json()
 
-        expirations = data["expirations"]["date"]
+        options = data["options"]["option"][:5]
 
-        results.append({
-            "symbol": symbol,
-            "expirations": expirations[:3]
-        })
+        for opt in options:
 
+            results.append({
+                "symbol": symbol,
+                "type": opt["option_type"],
+                "strike": opt["strike"],
+                "bid": opt["bid"],
+                "ask": opt["ask"],
+                "expiration": expiration
+            })
+
+    return results
     return results
