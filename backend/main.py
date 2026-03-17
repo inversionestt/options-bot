@@ -51,4 +51,3 @@ def scan():
             })
 
     return results
-    return results
