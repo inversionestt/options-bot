@@ -37,3 +37,42 @@ def scan():
         })
 
     return results
+import os
+import requests
+from fastapi import FastAPI
+
+app = FastAPI()
+
+API_KEY = os.getenv("TRADIER_API_KEY")
+
+headers = {
+    "Authorization": f"Bearer {API_KEY}",
+    "Accept": "application/json"
+}
+
+watchlist = ["AAPL","MSFT","GOOGL","AMZN","META","TSLA","NVDA"]
+
+@app.get("/")
+def home():
+    return {"status": "Options Bot Running"}
+
+@app.get("/scan")
+def scan():
+
+    results = []
+
+    for symbol in watchlist:
+
+        url = f"https://api.tradier.com/v1/markets/options/expirations?symbol={symbol}"
+
+        r = requests.get(url, headers=headers)
+        data = r.json()
+
+        expirations = data["expirations"]["date"]
+
+        results.append({
+            "symbol": symbol,
+            "expirations": expirations[:3]
+        })
+
+    return results
